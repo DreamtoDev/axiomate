@@ -31,5 +31,13 @@
     "coverageThreshold": {
       "global": { "branches": 80, "functions": 80, "lines": 80 }
     }
-  }
+  },
+  "repository": {
+  "type": "git",
+  "url": "https://github.com/DreamtoDev/axiomate"
+},
+"homepage": "https://github.com/DreamtoDev/axiomate#readme",
+"bugs": {
+  "url": "https://github.com/DreamtoDev/axiomate/issues"
+}
 }
