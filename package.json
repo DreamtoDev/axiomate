@@ -1,0 +1,35 @@
+{
+  "name": "axiomate",
+  "version": "26.22.3",
+  "description": "Zero-boilerplate API client — define once, use everywhere. Production-ready.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": ["src", "!src/**/*.test.js"],
+  "keywords": ["api", "axios", "react", "http-client", "rest", "typescript"],
+  "author": "Abdul Haseeb",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "peerDependencies": {
+    "axios": "^1.0.0",
+    "react": ">=16.8.0"
+  },
+  "devDependencies": {
+    "axios": "^1.6.0",
+    "react": "^18.0.0",
+    "@types/react": "^18.0.0",
+    "@types/jest": "^29.0.0",
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.0.0",
+    "axios-mock-adapter": "^1.22.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "collectCoverageFrom": ["src/**/*.js", "!src/index.js"],
+    "coverageThreshold": {
+      "global": { "branches": 80, "functions": 80, "lines": 80 }
+    }
+  }
+}
