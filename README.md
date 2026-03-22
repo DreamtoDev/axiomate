@@ -1,5 +1,7 @@
 # Axiomate
 
+https://www.npmjs.com/package/axiomate
+
 > Zero-boilerplate API client for JavaScript & React — define once, use everywhere.
 
 Axiomate solves a problem every frontend developer faces: writing the same `axios.get(...)` with headers, tokens, and error handling in every single component. With Axiomate, you define your entire backend API in one file and call it anywhere with a single clean line.
