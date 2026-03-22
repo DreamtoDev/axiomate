@@ -1,11 +1,21 @@
 {
   "name": "axiomate",
-  "version": "26.22.3",
+  "version": "26.22.4",
   "description": "Zero-boilerplate API client — define once, use everywhere. Production-ready.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
-  "files": ["src", "!src/**/*.test.js"],
-  "keywords": ["api", "axios", "react", "http-client", "rest", "typescript"],
+  "files": [
+    "src",
+    "!src/**/*.test.js"
+  ],
+  "keywords": [
+    "api",
+    "axios",
+    "react",
+    "http-client",
+    "rest",
+    "typescript"
+  ],
   "author": "Abdul Haseeb",
   "license": "MIT",
   "scripts": {
@@ -27,17 +37,24 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
-    "collectCoverageFrom": ["src/**/*.js", "!src/index.js"],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/index.js"
+    ],
     "coverageThreshold": {
-      "global": { "branches": 80, "functions": 80, "lines": 80 }
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80
+      }
     }
   },
   "repository": {
-  "type": "git",
-  "url": "https://github.com/DreamtoDev/axiomate"
-},
-"homepage": "https://github.com/DreamtoDev/axiomate#readme",
-"bugs": {
-  "url": "https://github.com/DreamtoDev/axiomate/issues"
-}
+    "type": "git",
+    "url": "https://github.com/DreamtoDev/axiomate"
+  },
+  "homepage": "https://github.com/DreamtoDev/axiomate#readme",
+  "bugs": {
+    "url": "https://github.com/DreamtoDev/axiomate/issues"
+  }
 }
