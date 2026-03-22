@@ -1,10 +1,11 @@
 # Axiomate
 
-https://www.npmjs.com/package/axiomate
-
 > Zero-boilerplate API client for JavaScript & React — define once, use everywhere.
 
 Axiomate solves a problem every frontend developer faces: writing the same `axios.get(...)` with headers, tokens, and error handling in every single component. With Axiomate, you define your entire backend API in one file and call it anywhere with a single clean line.
+
+📦 **npm:** https://www.npmjs.com/package/axiomate
+🐙 **GitHub:** https://github.com/DreamtoDev/axiomate
 
 ---
 
@@ -13,7 +14,7 @@ Axiomate solves a problem every frontend developer faces: writing the same `axio
 Axiomate ships with everything you need out of the box:
 
 - **`createApi`** — define all your endpoints in one place, get clean callable functions back
-- **`setTokenGetter`** — tell Axiomate where your auth token lives, it attaches it automatically
+- **`getToken`** — tell Axiomate where your auth token lives, it attaches it automatically
 - **`addRequestInterceptor`** — run logic before every outgoing request
 - **`addResponseInterceptor`** — run logic after every successful response
 - **`addErrorInterceptor`** — handle errors globally (401 logout, 500 alerts, etc.)
@@ -76,10 +77,7 @@ Token attached automatically. Base URL in one place. Every endpoint documented i
 ### Step 1 — One-time setup in `index.js` or `App.js`
 
 ```js
-import { setTokenGetter, addErrorInterceptor } from "axiomate";
-
-// Tell Axiomate where your token lives
-setTokenGetter(() => localStorage.getItem("token"));
+import { addErrorInterceptor } from "axiomate";
 
 // Handle errors globally — no try/catch needed in every component
 addErrorInterceptor((error) => {
@@ -102,6 +100,9 @@ import { createApi } from "axiomate";
 
 export const { api, mock, cache } = createApi({
   baseUrl: "http://localhost:8080",
+
+  // Tell Axiomate where your token lives
+  getToken: () => localStorage.getItem("token"),
 
   endpoints: {
     // Auth
@@ -216,7 +217,7 @@ The core function. Call it once per backend, get back `{ api, mock, cache }`.
 | `headers` | object | ❌ | `{}` | Extra default headers |
 | `timeout` | number | ❌ | `10000` | Global timeout in ms |
 | `autoToken` | boolean | ❌ | `true` | Auto-attach Bearer token |
-| `getToken` | function | ❌ | localStorage | Custom token getter for this instance |
+| `getToken` | function | ❌ | localStorage | Token getter for this instance |
 | `maxCacheSize` | number | ❌ | `200` | Max cached entries before auto-eviction |
 | `onSWRError` | function | ❌ | console.warn | Called when SWR background refetch fails |
 
@@ -236,22 +237,29 @@ The core function. Call it once per backend, get back `{ api, mock, cache }`.
 
 ---
 
-### `setTokenGetter(fn)`
+### `getToken`
 
-Tell Axiomate how to get your auth token. Called before every request automatically.
+Tell Axiomate how to get your auth token. Defined inside `createApi` — each instance can have its own token.
 
 ```js
 // From localStorage
-setTokenGetter(() => localStorage.getItem("token"));
+const { api } = createApi({
+  getToken: () => localStorage.getItem("token"),
+  ...
+});
 
 // From Redux store
-setTokenGetter(() => store.getState().auth.token);
+const { api } = createApi({
+  getToken: () => store.getState().auth.token,
+  ...
+});
 
 // From a cookie
-setTokenGetter(() => getCookie("auth_token"));
+const { api } = createApi({
+  getToken: () => getCookie("auth_token"),
+  ...
+});
 ```
-
-> For per-instance tokens (multiple backends), use `getToken` inside `createApi` instead.
 
 ---
 
@@ -260,6 +268,8 @@ setTokenGetter(() => getCookie("auth_token"));
 Runs before every outgoing request across all instances. Use it to add headers, log requests, or modify config.
 
 ```js
+import { addRequestInterceptor } from "axiomate";
+
 // Add app version to every request
 addRequestInterceptor((config) => {
   config.headers["X-App-Version"] = "4.0.0";
@@ -280,18 +290,14 @@ addRequestInterceptor((config) => {
 Runs after every successful response across all instances.
 
 ```js
+import { addResponseInterceptor } from "axiomate";
+
 // Save a new token if the server sends one
 addResponseInterceptor((response) => {
   if (response.data?.newToken) {
     localStorage.setItem("token", response.data.newToken);
   }
   return response; // must return response
-});
-
-// Log response time
-addResponseInterceptor((response) => {
-  console.log(`← ${response.config.url} — ${response.status}`);
-  return response;
 });
 ```
 
@@ -302,9 +308,10 @@ addResponseInterceptor((response) => {
 Runs when any request fails. Use it for global error handling.
 
 ```js
+import { addErrorInterceptor } from "axiomate";
+
 addErrorInterceptor((error) => {
   if (error.status === 401) {
-    // Token expired — redirect to login
     window.location.href = "/login";
   }
   if (error.status === 403) {
@@ -378,13 +385,11 @@ import { api } from "./api.config";
 
 const paginator = createPaginator(api.getProducts, { pageSize: 20 });
 
-// Fetch pages
 const page1 = await paginator.next();   // GET /products?page=1&limit=20
 const page2 = await paginator.next();   // GET /products?page=2&limit=20
 await paginator.goTo(5);                // GET /products?page=5&limit=20
 paginator.reset();                      // back to page 1
 
-// Check state
 paginator.currentPage   // current page number
 paginator.hasMore       // false when last page returned fewer items than pageSize
 ```
@@ -398,7 +403,6 @@ Develop and test your frontend without a real backend.
 ```js
 const { api, mock } = createApi({ ... });
 
-// Enable mock mode
 mock.enable();
 
 // Static mock response
@@ -413,9 +417,8 @@ mock.register("login", (data) => {
 // With custom delay (simulates slow network)
 mock.register("getProducts", [{ id: 1 }, { id: 2 }], { delay: 1000 });
 
-// Disable when done
 mock.disable();
-mock.clear(); // remove all registered mocks
+mock.clear();
 ```
 
 ---
@@ -438,21 +441,18 @@ cache.cleanup();         // remove only expired entries (keep fresh ones)
 Each `createApi` call is fully isolated — different base URLs, different tokens, no conflict.
 
 ```js
-// Main API
 const { api: mainApi } = createApi({
   baseUrl: "http://api.myapp.com",
   getToken: () => localStorage.getItem("token"),
   endpoints: { getUser: { path: "/user/:id", method: "GET" } },
 });
 
-// Admin API — completely separate instance
 const { api: adminApi } = createApi({
   baseUrl: "http://admin.myapp.com",
   getToken: () => localStorage.getItem("admin-token"),
   endpoints: { getStats: { path: "/stats", method: "GET" } },
 });
 
-// Both work independently
 await mainApi.getUser({ id: 1 });
 await adminApi.getStats();
 ```
@@ -460,8 +460,6 @@ await adminApi.getStats();
 ---
 
 ### TypeScript
-
-Define response types once, get full type safety everywhere.
 
 ```ts
 interface User      { id: number; name: string; email: string; }
@@ -477,16 +475,13 @@ const { api } = createApi<typeof endpoints, {
   endpoints: { ... },
 });
 
-// Full type safety
 const user = await api.getUser({ id: 1 });
 user.name;   // ✅ string — autocomplete works
-user.xyz;    // ❌ TypeScript error — property does not exist
+user.xyz;    // ❌ TypeScript error
 
-// Typed React hook
 const { data } = useApi<User>(api.getUser);
 data?.name;  // ✅ typed as string | null
 
-// Typed paginator
 const paginator = createPaginator<Product>(api.getProducts);
 const items = await paginator.next();
 items[0].price; // ✅ typed as number
@@ -517,6 +512,14 @@ items[0].price; // ✅ typed as number
 npm install
 npm test
 ```
+
+---
+
+## Links
+
+- 📦 npm: https://www.npmjs.com/package/axiomate
+- 🐙 GitHub: https://github.com/DreamtoDev/axiomate
+- 🐛 Issues: https://github.com/DreamtoDev/axiomate/issues
 
 ---
 
